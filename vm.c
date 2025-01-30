@@ -136,7 +136,8 @@ void execute_cycle() {
                     SP++;
                 } else if (IR[2] == 2) {
                     printf("Please enter an integer: ");
-                    scanf("%d", &PAS[SP - 1]);
+                    SP--; // Move SP down to allocate space for input
+                    scanf("%d", &PAS[SP]); // Store input at correct stack location
                 } else if (IR[2] == 3) {
                     halt = 0;
                 }
