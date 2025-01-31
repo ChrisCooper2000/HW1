@@ -15,12 +15,12 @@ int halt = 1;
 
 // Function to find base L levels down
 int base(int BP, int L) {
-    int arb = BP; // Start at the current base pointer
-    while (L > 0) { // Traverse L levels down
-        arb = PAS[arb]; // Follow the static link (SL)
+    int arb = BP;
+    while (L > 0) {
+        arb = PAS[arb];
         L--;
     }
-    return arb; // Return the base pointer of the desired level
+    return arb;
 }
 
 // Load instructions from input file
@@ -33,9 +33,9 @@ void load_program(char *filename) {
     
     int op, l, m, ind = TEXT_START;
     while (fscanf(file, "%d %d %d", &op, &l, &m) != EOF) {
-        PAS[ind++] = op; // Store operation code
-        PAS[ind++] = l;  // Store lexical level
-        PAS[ind++] = m;  // Store modifier
+        PAS[ind++] = op;
+        PAS[ind++] = l;
+        PAS[ind++] = m;
     }
     fclose(file);
 }
@@ -47,83 +47,79 @@ void execute_cycle() {
         "INC", "JMP", "JPC", "SYS"
     };
     
-    // Print initial values of PC, BP, SP, and stack
     printf("PC BP  SP  stack\n");
     printf("Initial values: %2d %3d %3d\n", PC, BP, SP);
 
     while (halt) {
-        // Fetch cycle: Load instruction into IR
         IR[0] = PAS[PC];
         IR[1] = PAS[PC + 1];
         IR[2] = PAS[PC + 2];
-        PC += 3; // Increment PC by 3 to fetch the next instruction
+        PC += 3;
 
-        // Print the current instruction
         printf("%-3s %d %2d ", opcodes[IR[0]], IR[1], IR[2]);
 
-        // Execute cycle: Perform operation based on opcode
         switch (IR[0]) {
             case 1: // LIT 0, M
                 SP--;
-                PAS[SP] = IR[2]; // Push literal M onto the stack
+                PAS[SP] = IR[2];
                 break;
             case 2: // OPR 0, M
                 switch (IR[2]) {
                     case 0: // RTN
-                        SP = BP + 1; // Reset stack pointer
-                        BP = PAS[SP - 2]; // Restore base pointer
-                        PC = PAS[SP - 3]; // Return to the caller
+                        SP = BP + 1;
+                        BP = PAS[SP - 2];
+                        PC = PAS[SP - 3];
                         break;
                     case 1: // ADD
-                        PAS[SP + 1] += PAS[SP]; // Add top two stack values
+                        PAS[SP + 1] += PAS[SP];
                         SP++;
                         break;
                     case 3: // MUL
-                        PAS[SP + 1] *= PAS[SP]; // Multiply top two stack values
+                        PAS[SP + 1] *= PAS[SP];
                         SP++;
                         break;
                     case 5: // EQL
-                        PAS[SP + 1] = (PAS[SP + 1] == PAS[SP]); // Compare equality
+                        PAS[SP + 1] = (PAS[SP + 1] == PAS[SP]);
                         SP++;
                         break;
                 }
                 break;
             case 3: // LOD L, M
                 SP--;
-                PAS[SP] = PAS[base(BP, IR[1]) - IR[2]]; // Load value from stack
+                PAS[SP] = PAS[base(BP, IR[1]) - IR[2]];
                 break;
             case 4: // STO L, M
-                PAS[base(BP, IR[1]) - IR[2]] = PAS[SP]; // Store value to stack
+                PAS[base(BP, IR[1]) - IR[2]] = PAS[SP];
                 SP++;
                 break;
             case 6: // INC 0, M
-                SP -= IR[2]; // Allocate M memory words
+                SP -= IR[2];
                 break;
             case 7: // JMP 0, M
-                PC = IR[2]; // Jump to instruction at address M
+                PC = IR[2];
                 break;
             case 8: // JPC 0, M
-                if (PAS[SP] == 0) // If top stack value is 0
-                    PC = IR[2]; // Jump to instruction at address M
+                if (PAS[SP] == 0)
+                    PC = IR[2];
                 SP++;
                 break;
             case 9: // SYS
-                if (IR[2] == 1) { // Output top stack value
+                if (IR[2] == 1) {
                     printf("\nOutput result is: %d\n", PAS[SP]);
                     SP++;
-                } else if (IR[2] == 2) { // Read input from user
+                } else if (IR[2] == 2) {
                     printf("\nPlease enter an integer: ");
-                    scanf("%d", &PAS[SP - 1]);
-                } else if (IR[2] == 3) { // Halt the program
+                    SP--;
+                    scanf("%d", &PAS[SP]);
+                } else if (IR[2] == 3) {
                     halt = 0;
                 }
                 break;
         }
 
-        // Print current state of PC, BP, SP, and stack
         printf("%2d %3d %3d ", PC, BP, SP);
         for (int i = 499; i >= SP; i--) {
-            if (i == BP) printf("| "); // Mark base pointer
+            if (i == BP) printf("| ");
             printf("%d ", PAS[i]);
         }
         printf("\n");
@@ -136,10 +132,11 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     
-    load_program(argv[1]); // Load the program from file
-    execute_cycle(); // Execute the loaded program
+    load_program(argv[1]);
+    execute_cycle();
     
     return 0;
 }
+
 
 
