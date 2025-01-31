@@ -56,7 +56,7 @@ void execute_cycle() {
         IR[2] = PAS[PC + 2];
         PC += 3;
 
-        printf("\t%-3s %d %2d ", opcodes[IR[0]], IR[1], IR[2]);
+        printf("%-3s %d %2d ", opcodes[IR[0]], IR[1], IR[2]);
 
         switch (IR[0]) {
             case 1: // LIT 0, M
