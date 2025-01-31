@@ -4,23 +4,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define ARRAY_SIZE 500
+#define ARR_SIZE 500
 #define TEXT_START 10
+
 
 // Registers
 int BP = 499, SP = 500, PC = TEXT_START;
 int IR[3] = {0};
-int PAS[ARRAY_SIZE] = {0};
+int PAS[ARR_SIZE] = {0};
 int halt = 1;
 
-// Function to find base L levels down
-int base(int BP, int L) {
-    int arb = BP;
-    while (L > 0) {
-        arb = PAS[arb];
-        L--;
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("Usage: %s <input file>\n", argv[0]);
+        return 1;
     }
-    return arb;
+    
+    load_program(argv[1]);
+    execute_cycle();
+    
+    return 0;
 }
 
 // Load instructions from input file
@@ -31,23 +35,31 @@ void load_program(char *filename) {
         exit(1);
     }
     
-    int op, l, m, index = TEXT_START;
+    int op, l, m, ind = TEXT_START;
     while (fscanf(file, "%d %d %d", &op, &l, &m) != EOF) {
-        PAS[index++] = op;
-        PAS[index++] = l;
-        PAS[index++] = m;
+        PAS[ind++] = op;
+        PAS[ind++] = l;
+        PAS[ind++] = m;
     }
     fclose(file);
 }
 
 // Execute instructions
 void execute_cycle() {
+
+    const char *opcodes[] = {
+    "", "LIT", "OPR", "LOD", "STO", "CAL",
+    "INC", "JMP", "JPC", "SYS"};
+    
     while (halt) {
         // Fetch cycle
         IR[0] = PAS[PC];
         IR[1] = PAS[PC + 1];
         IR[2] = PAS[PC + 2];
         PC += 3;
+
+        // Print current instruction
+        printf("%s %d %d ", opcodes[IR[0]], IR[1], IR[2]);
 
         // Execute cycle
         switch (IR[0]) {
@@ -66,40 +78,12 @@ void execute_cycle() {
                         PAS[SP + 1] += PAS[SP];
                         SP++;
                         break;
-                    case 2: // SUB
-                        PAS[SP + 1] -= PAS[SP];
-                        SP++;
-                        break;
                     case 3: // MUL
                         PAS[SP + 1] *= PAS[SP];
                         SP++;
                         break;
-                    case 4: // DIV
-                        PAS[SP + 1] /= PAS[SP];
-                        SP++;
-                        break;
                     case 5: // EQL
                         PAS[SP + 1] = (PAS[SP + 1] == PAS[SP]);
-                        SP++;
-                        break;
-                    case 6: // NEQ
-                        PAS[SP + 1] = (PAS[SP + 1] != PAS[SP]);
-                        SP++;
-                        break;
-                    case 7: // LSS
-                        PAS[SP + 1] = (PAS[SP + 1] < PAS[SP]);
-                        SP++;
-                        break;
-                    case 8: // LEQ
-                        PAS[SP + 1] = (PAS[SP + 1] <= PAS[SP]);
-                        SP++;
-                        break;
-                    case 9: // GTR
-                        PAS[SP + 1] = (PAS[SP + 1] > PAS[SP]);
-                        SP++;
-                        break;
-                    case 10: // GEQ
-                        PAS[SP + 1] = (PAS[SP + 1] >= PAS[SP]);
                         SP++;
                         break;
                 }
@@ -111,13 +95,6 @@ void execute_cycle() {
             case 4: // STO L, M
                 PAS[base(BP, IR[1]) - IR[2]] = PAS[SP];
                 SP++;
-                break;
-            case 5: // CAL L, M
-                PAS[SP - 1] = base(BP, IR[1]);
-                PAS[SP - 2] = BP;
-                PAS[SP - 3] = PC;
-                BP = SP - 1;
-                PC = IR[2];
                 break;
             case 6: // INC 0, M
                 SP -= IR[2];
@@ -136,24 +113,32 @@ void execute_cycle() {
                     SP++;
                 } else if (IR[2] == 2) {
                     printf("Please enter an integer: ");
-                    SP--; // Move SP down to allocate space for input
-                    scanf("%d", &PAS[SP]); // Store input at correct stack location
+                    scanf("%d", &PAS[SP - 1]);
+                    SP--; // Adjust stack pointer
                 } else if (IR[2] == 3) {
                     halt = 0;
                 }
                 break;
         }
+
+        // Print current stack state
+        printf("%2d %3d %3d ", PC, BP, SP);
+        for (int i = 499; i >= SP; i--) {
+            if (i == BP) printf("| "); // Separate activation records
+            printf("%d ", PAS[i]);
+        }
+        printf("\n");
     }
 }
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("Usage: %s <input file>\n", argv[0]);
-        return 1;
+
+
+// Function to find base L levels down
+int base(int BP, int L) {
+    int arb = BP;
+    while (L > 0) {
+        arb = PAS[arb];
+        L--;
     }
-    
-    load_program(argv[1]);
-    execute_cycle();
-    
-    return 0;
+    return arb;
 }
