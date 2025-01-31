@@ -108,14 +108,14 @@ void execute_cycle() {
                 SP++;
                 break;
             case 9: // SYS
-                if (IR[2] == 1) {
+                if (IR[2] == 1) { // Output top of stack
                     printf("\nOutput result is: %d\n", PAS[SP]);
                     SP++;
-                } else if (IR[2] == 2) {
+                } else if (IR[2] == 2) { // Input integer
                     printf("\nPlease enter an integer: ");
-                    scanf("%d", &PAS[SP]);
-                    SP--;
-                } else if (IR[2] == 3) {
+                    SP--;                      // Move SP to allocate space
+                    scanf("%d", &PAS[SP]);     // Store input
+                } else if (IR[2] == 3) { // Halt execution
                     halt = 0;
                 }
                 break;
