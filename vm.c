@@ -7,24 +7,20 @@
 #define ARR_SIZE 500
 #define TEXT_START 10
 
-
 // Registers
 int BP = 499, SP = 500, PC = TEXT_START;
 int IR[3] = {0};
 int PAS[ARR_SIZE] = {0};
 int halt = 1;
 
-
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("Usage: %s <input file>\n", argv[0]);
-        return 1;
+// Function to find base L levels down
+int base(int BP, int L) {
+    int arb = BP;
+    while (L > 0) {
+        arb = PAS[arb];
+        L--;
     }
-    
-    load_program(argv[1]);
-    execute_cycle();
-    
-    return 0;
+    return arb;
 }
 
 // Load instructions from input file
@@ -46,11 +42,15 @@ void load_program(char *filename) {
 
 // Execute instructions
 void execute_cycle() {
-
     const char *opcodes[] = {
-    "", "LIT", "OPR", "LOD", "STO", "CAL",
-    "INC", "JMP", "JPC", "SYS"};
+        "", "LIT", "OPR", "LOD", "STO", "CAL",
+        "INC", "JMP", "JPC", "SYS"
+    };
     
+    // Print initial values
+    printf("PC BP  SP  stack\n");
+    printf("Initial values: %2d %3d %3d\n", PC, BP, SP);
+
     while (halt) {
         // Fetch cycle
         IR[0] = PAS[PC];
@@ -59,7 +59,7 @@ void execute_cycle() {
         PC += 3;
 
         // Print current instruction
-        printf("%s %d %d ", opcodes[IR[0]], IR[1], IR[2]);
+        printf("%-3s %d %2d ", opcodes[IR[0]], IR[1], IR[2]);
 
         // Execute cycle
         switch (IR[0]) {
@@ -113,8 +113,8 @@ void execute_cycle() {
                     SP++;
                 } else if (IR[2] == 2) {
                     printf("\nPlease enter an integer: ");
-                    scanf("%d", &PAS[SP - 1]);
-                    SP--; // Adjust stack pointer
+                    scanf("%d", &PAS[SP]);
+                    SP--;
                 } else if (IR[2] == 3) {
                     halt = 0;
                 }
@@ -122,9 +122,9 @@ void execute_cycle() {
         }
 
         // Print current stack state
-        printf("\t%2d %3d %3d ", PC, BP, SP);
+        printf("%2d %3d %3d ", PC, BP, SP);
         for (int i = 499; i >= SP; i--) {
-            if (i == BP) printf("| "); // Separate activation records
+            if (i == BP) printf("| ");
             printf("%d ", PAS[i]);
         }
         printf("\n");
@@ -132,13 +132,14 @@ void execute_cycle() {
 }
 
 
-
-// Function to find base L levels down
-int base(int BP, int L) {
-    int arb = BP;
-    while (L > 0) {
-        arb = PAS[arb];
-        L--;
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("Usage: %s <input file>\n", argv[0]);
+        return 1;
     }
-    return arb;
+    
+    load_program(argv[1]);
+    execute_cycle();
+    
+    return 0;
 }
