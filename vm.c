@@ -47,10 +47,6 @@ void execute_cycle() {
         "INC", "JMP", "JPC", "SYS"
     };
     
-    // Print initial values
-    printf("PC BP  SP  stack\n");
-    printf("Initial values: %2d %3d %3d\n", PC, BP, SP);
-
     while (halt) {
         // Fetch cycle
         IR[0] = PAS[PC];
@@ -59,7 +55,7 @@ void execute_cycle() {
         PC += 3;
 
         // Print current instruction
-        printf("%-3s %d %2d ", opcodes[IR[0]], IR[1], IR[2]);
+        printf("%s %d %d ", opcodes[IR[0]], IR[1], IR[2]);
 
         // Execute cycle
         switch (IR[0]) {
@@ -108,14 +104,14 @@ void execute_cycle() {
                 SP++;
                 break;
             case 9: // SYS
-                if (IR[2] == 1) { // Output top of stack
-                    printf("\nOutput result is: %d\n", PAS[SP]);
+                if (IR[2] == 1) {
+                    printf("Output result is: %d\n", PAS[SP]);
                     SP++;
-                } else if (IR[2] == 2) { // Input integer
-                    printf("\nPlease enter an integer: ");
-                    SP--;                      // Move SP to allocate space
-                    scanf("%d", &PAS[SP]);     // Store input
-                } else if (IR[2] == 3) { // Halt execution
+                } else if (IR[2] == 2) {
+                    printf("Please enter an integer: ");
+                    scanf("%d", &PAS[SP]); // Corrected SP position
+                    SP--;
+                } else if (IR[2] == 3) {
                     halt = 0;
                 }
                 break;
@@ -124,13 +120,12 @@ void execute_cycle() {
         // Print current stack state
         printf("%2d %3d %3d ", PC, BP, SP);
         for (int i = 499; i >= SP; i--) {
-            if (i == BP) printf("| ");
+            if (i == BP) printf("| "); // Separate activation records
             printf("%d ", PAS[i]);
         }
         printf("\n");
     }
 }
-
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
