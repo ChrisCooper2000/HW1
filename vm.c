@@ -47,7 +47,7 @@ void execute_cycle() {
         "INC", "JMP", "JPC", "SYS"
     };
     
-    printf("PC BP  SP  stack\n");
+    printf("\tPC BP  SP  stack\n");
     printf("Initial values: %2d %3d %3d\n", PC, BP, SP);
 
     while (halt) {
@@ -117,7 +117,7 @@ void execute_cycle() {
                 break;
         }
 
-        printf("%2d %3d %3d ", PC, BP, SP);
+        printf("\t%2d %3d %3d ", PC, BP, SP);
         for (int i = 499; i >= SP; i--) {
             if (i == BP) printf("| ");
             printf("%d ", PAS[i]);
