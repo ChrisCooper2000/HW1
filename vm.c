@@ -109,10 +109,10 @@ void execute_cycle() {
                 break;
             case 9: // SYS
                 if (IR[2] == 1) {
-                    printf("Output result is: %d\n", PAS[SP]);
+                    printf("\nOutput result is: %d\n", PAS[SP]);
                     SP++;
                 } else if (IR[2] == 2) {
-                    printf("Please enter an integer: ");
+                    printf("\nPlease enter an integer: ");
                     scanf("%d", &PAS[SP - 1]);
                     SP--; // Adjust stack pointer
                 } else if (IR[2] == 3) {
@@ -122,7 +122,7 @@ void execute_cycle() {
         }
 
         // Print current stack state
-        printf("%2d %3d %3d ", PC, BP, SP);
+        printf("\t%2d %3d %3d ", PC, BP, SP);
         for (int i = 499; i >= SP; i--) {
             if (i == BP) printf("| "); // Separate activation records
             printf("%d ", PAS[i]);
